@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo 'No tests, sorry!'",
-    "build": "elm make --yes src/Main.elm --output public/built/index.js",
+    "build": "elm make --yes src/Main.elm --output docs/built/index.js",
     "watch": "nodemon --watch src --ext elm --exec 'npm run -s build'",
-    "serve": "cd public && browser-sync start --server --files \"built/*.js, *.css\"",
+    "serve": "cd docs && browser-sync start --server --files \"built/*.js, *.css\"",
     "start": "run-p serve watch",
     "elm-install": "elm package install",
-    "make": "elm make src/Main.elm --warn --output public/built/index.html",
+    "make": "elm make src/Main.elm --warn --output docs/built/index.html",
     "hot": "elm reactor -a=localhost",
     "play": "elm-repl"
   },
