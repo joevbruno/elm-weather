@@ -1,68 +1,119 @@
-module Main exposing (..)
-
 import Html exposing (..)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
-import Html.App exposing (beginnerProgram)
-
-
--- # Main
-
+import Html.App as Html
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Http
+import Json.Decode exposing (Decoder)
+import Task
+import Debug exposing (..)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 main : Program Never
 main =
-    beginnerProgram
-        { model = model
-        , view = view
+    Html.program
+        { init = init 37.8267 -122.423
         , update = update
+        , subscriptions = \_ -> Sub.none
+        , view = view
         }
 
+-- MODEL
 
+type alias HourlyDataModel =
+  { time: Int,
+    summary: String,
+    icon: String,
+    precipIntensity: Float,
+    precipProbability: Float,
+    temperature: Float,
+    apparentTemperature: Float,
+    dewPoint: Float,
+    humidity: Float,
+    windSpeed: Float,
+    windBearing: Int,
+    visibility: Float,
+    cloudCover: Float,
+    pressure: Float,
+    ozone: Float
+  }
 
--- # Model
-
+type alias HourlyModel =
+  { summary: String,
+    icon: String,
+    data: List HourlyDataModel
+  }
 
 type alias Model =
-    Int
+  { hourly: Maybe HourlyModel,
+    latitude: Float,
+    longitude: Float
+  }
 
+init : Float -> Float -> (Model, Cmd Msg)
+init latitude longitude =
+  ({  latitude = latitude
+    , longitude = longitude }
+    , getWeather latitude longitude
+  )
 
-model : Model
-model =
-    0
-
-
-
--- # Messages
+-- UPDATE
 
 
 type Msg
-    = Inc
-    | Dec
+  = Update
+  | FetchSucceed String
+  | FetchFail Http.Error
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
+    Update ->
+      (model, getWeather model.latitude model.longitude)
+
+    FetchSucceed hourly ->
+      ({ model | hourly = hourly }, Cmd.none)
+
+    FetchFail _ ->
+      (model, Cmd.none)
 
 
 
--- # Update
-
-
-update : Msg -> Model -> Model
-update action model =
-    case action of
-        Inc ->
-            model + 1
-
-        Dec ->
-            model - 1
-
-
-
--- # View
+-- VIEW
 
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        [ h1 [] [ text "Counterlicious" ]
-        , div [] [ text "Count: ", text (toString model) ]
-        , button [ onClick Dec ] [ text "Decrement" ]
-        , button [ onClick Inc ] [ text "Increment" ]
-        ]
+  div []
+    [ h2 [] [text model.longitude.toString]
+    , button [ onClick Update ] [ text "Update!" ]
+    , br [] []
+    ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
+
+
+
+-- HTTP
+
+
+getWeather : Float -> Float -> Cmd Msg
+getWeather latitude longitude =
+  let
+    url =
+      "https://api.forecast.io/forecast/4a726f371f08249dadae62caaacfdcd8/" ++ latitude ++ "," ++ longitude
+  in
+    Task.perform FetchFail FetchSucceed (Http.get decodeWeather url)
+
+
+decodeWeather : Decoder HourlyModel
+decodeWeather =
+  decode HourlyModel
+    |> Json.Decode.Pipeline.required "hourly" HourlyModel
