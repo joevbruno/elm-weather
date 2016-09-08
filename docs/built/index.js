@@ -8707,6 +8707,14 @@ var _evancz$elm_http$Http$post = F3(
 var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
+var _user$project$Main$getSummary = function (completeForecast) {
+	var _p0 = completeForecast;
+	if (_p0.ctor === 'Nothing') {
+		return 'Weather goes here.';
+	} else {
+		return _p0._0.currently.summary;
+	}
+};
 var _user$project$Main$apply = F2(
 	function (func, value) {
 		return A3(
@@ -8859,16 +8867,7 @@ var _user$project$Main$FetchSucceed = function (a) {
 };
 var _user$project$Main$getWeather = F2(
 	function (latitude, longitude) {
-		var url = A2(
-			_elm_lang$core$Basics_ops['++'],
-			'https://api.forecast.io/forecast/4a726f371f08249dadae62caaacfdcd8/',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(latitude),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					',',
-					_elm_lang$core$Basics$toString(longitude))));
+		var url = 'http://localhost:4000';
 		return A3(
 			_elm_lang$core$Task$perform,
 			_user$project$Main$FetchFail,
@@ -8885,8 +8884,8 @@ var _user$project$Main$init = F2(
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'Update':
 				return {
 					ctor: '_Tuple2',
@@ -8898,7 +8897,7 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{completeForecast: _p0._0}),
+						{completeForecast: _p1._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
@@ -8923,6 +8922,15 @@ var _user$project$Main$view = function (model) {
 						_elm_lang$core$Basics$toString(model.longitude))
 					])),
 				A2(
+				_elm_lang$html$Html$h2,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						_user$project$Main$getSummary(model.completeForecast))
+					])),
+				A2(
 				_elm_lang$html$Html$button,
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -8945,7 +8953,7 @@ var _user$project$Main$main = {
 		{
 			init: A2(_user$project$Main$init, 37.8267, -122.423),
 			update: _user$project$Main$update,
-			subscriptions: function (_p1) {
+			subscriptions: function (_p2) {
 				return _elm_lang$core$Platform_Sub$none;
 			},
 			view: _user$project$Main$view

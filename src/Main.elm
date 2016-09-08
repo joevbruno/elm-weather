@@ -176,18 +176,27 @@ getWeather : Float -> Float -> Cmd Msg
 getWeather latitude longitude =
   let
     url =
-      "https://api.forecast.io/forecast/4a726f371f08249dadae62caaacfdcd8/" ++ toString latitude ++ "," ++ toString longitude
+      "http://localhost:4000"
   in
     Task.perform FetchFail FetchSucceed (Http.get completeForecastDecoder url)
 
 
 
 -- VIEW
+getSummary : (Maybe CompleteForecast) -> String
+getSummary completeForecast =
+  case completeForecast of
+    Nothing ->
+      "Weather goes here."
+
+    Just completeForecast ->
+      completeForecast.currently.summary
 
 view : Model -> Html Msg
 view model =
   div []
     [ h2 [] [text (toString model.longitude)]
+    , h2 [] [text (getSummary model.completeForecast)]
     , button [ onClick Update ] [ text "Update!" ]
     , br [] []
     ]
@@ -195,7 +204,6 @@ view model =
 
 
 -- SUBSCRIPTIONS
-
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
